@@ -1,0 +1,54 @@
+/* exampl2.spr */
+/*
+   Try the following questions
+   (japanese_car_pecentage france Percentage)
+   or
+   (japanese_car_percentage Country 63.5)
+   for example
+ */
+
+/* market penetration of Japanese cars in Europe, 1980 figures */
+(japanese_car_percentage iceland 63.5)
+(japanese_car_percentage greece 49.2)
+(japanese_car_percentage norway 39.2)
+(japanese_car_percentage finland 35.5)
+(japanese_car_percentage ireland 31.3)
+(japanese_car_percentage denmark 31.0)
+(japanese_car_percentage holland 26.5)
+(japanese_car_percentage belgium 24.3)
+(japanese_car_percentage switzerland 23.1)
+(japanese_car_percentage austria 20.9)
+(japanese_car_percentage sweden 14.2)
+(japanese_car_percentage great_britain 11.9)
+(japanese_car_percentage west_germany 10.6)
+(japanese_car_percentage portugal 7.6)
+(japanese_car_percentage france 2.9) /* honestly */
+
+/* now this may make you wonder about more sophisticated
+   questions like:
+   What countries have a japanese car percentage greater
+   than 30 percent?
+   What is the country that has the lowest Japanese car 
+   precentage?
+   The query for the second question is easy: it's a 
+   question in two parts: The first gets the percentage for the
+   country, the second just retains those percentages that
+   are above 30.0 . That's a calculation or a call to a
+   builtin "rless".
+   The whole query turns out to look like this:
+    ((japanese_car_percentage Country Percentage)(rless 30.0 Percentage))
+   Note the outer brackets.
+   We are asking for a solution to both parts at a time.
+   Prolog works from left to right, and "bactracks" to the left
+   when it cant solve one of the subproblems (or "goals").
+
+   Prolog turns out to be more clumsy than SQL in formulating
+   the second query.
+   You need to define a few procedures, and the solution is way
+   beyond the scope of the pedagogical progression, but 
+   here is the general idea:
+   First form the list of all pairs of countries and their
+   corresponding percentages, then use a routine that picks out
+   the pair whose second part is the least of the lot.
+   We shall come back to that latter.
+*/

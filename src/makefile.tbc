@@ -1,0 +1,40 @@
+# makefile for Small Prolog on PC with Turbo C
+# note that the compact memory model could be used.
+# you may need to change to the large model this if you make your own code.
+# We suppose that most of the options are found in turboc.cfg
+# You will need to change the directories in the link line as well
+# as in turboc.lnk
+
+.c.obj:
+	tcc -c -ml -DMSDOS=1 $<
+
+SRC = pralloc.c prassert.c prbuilti.c prconsul.c prdebug.c prerror.c \
+ prhash.c prlush.c prmain.c prparse.c prprint.c prscan.c pribmpc.c prunify.c
+
+OBJ = pralloc.obj prassert.obj prbltin.obj prcnsult.obj prdebug.obj\
+	prerror.obj  prhash.obj prlush.obj prparse.obj \
+	prprint.obj prscan.obj pribmpc.obj prunify.obj prmain.obj
+
+sprolog.exe : $(OBJ)
+	tlink /c /v @turboc.lnk, sprolog.exe,,c:\tc\lib\cl c:\tc\lib\emu c:\tc\lib\mathl
+
+pp.exe : pp.c
+	tcc pp.c 
+	
+prmain.obj: prmain.c 
+prlush.obj: prlush.c prtypes.h prolog.h prlush.h
+prscan.obj: prscan.c prtypes.h prolog.h prlex.h
+prbltin.obj: prbltin.c prbltin.h prtypes.h prolog.h
+pralloc.obj: pralloc.c prtypes.h prolog.h 
+prassert.obj  prassert.c: prtypes.h prolog.h 
+prcnsult.obj  prcnsult.c: prtypes.h prolog.h 
+prdebug.obj: prdebug.c prtypes.h prolog.h 
+prerror.obj  prerror.c : prtypes.h prolog.h 
+prhash.obj  prhash.c: prtypes.h prolog.h 
+prparse.obj  prparse.c: prtypes.h prolog.h 
+prprint.obj  prprint.c: prtypes.h prolog.h prlex.h
+pribmpc.obj  pribmpc.c: prtypes.h prolog.h 
+prunify.obj  prunify.c: prtypes.h prolog.h 
+
+	
+

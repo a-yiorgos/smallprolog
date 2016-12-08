@@ -1,0 +1,71 @@
+/* exampl4.spr */
+/* exploring input/output builtins */
+/* A builtin is a way of executing a procedure that has nothing
+  to do with logic per se. For example input/output operations
+  are done with builtins.
+  consult is probably the first builtin you have used.
+ */
+
+/* try the following query 
+   ((writes "Hello ")(writes "World.")(nl))
+   then load this file and try the query (hello_world)
+ */
+
+((hello_world)
+ (writes "Hello ")
+ (writes "World.")
+ (nl)
+)
+
+/* Inserting an output in your programs is a good way of following
+  the way prolog works. You can also put the interpreter in
+  trace_mode with a call to (trace).
+ */
+
+/*************
+ Output examples
+ *************/
+
+((output_demo)
+ (writes "A string printed with writes followed by a carriage return.")
+ (nl)
+ (display "A string printed with display followed by a carriage return.")
+ (nl)
+ (put 97) /* like putchar */
+ (put 98)
+ (put 99)
+ (nl)
+ (tell "outfile.dat") /* direct output to outfile.dat */
+ (writes "This goes to outfile.dat")
+ (nl)
+ (tell "outfile2.dat")/* outfile.dat is still open */
+ (writes "This goes to outfile2.dat")
+ (nl)
+ (tell "outfile.dat")
+ (display (a b c))
+ (nl)
+ (told) /* outfile.dat is closed */
+ (writes "This goes to the screen")
+ (nl)
+ (tell "outfile2.dat")
+ (told) /* outfile2.dat is closed */
+ (display bye)
+ (nl)
+)
+/* now look at those files ! */
+
+/*************
+ Input examples
+ *************/
+((input_demo)
+ (see "example4.spr")
+ (read A_list)
+ (display A_list)
+ (nl)
+ (seen)/* closes example4.dat */
+ (writes "Type a character and a  return: ")
+ (get The_character)
+ (writes "You typed ")
+ (put The_character)
+ (nl)
+)

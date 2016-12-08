@@ -1,0 +1,16 @@
+pralloc.obj+ 
+prassert.obj+ 
+prbltin.obj+ 
+prcnsult.obj+ 
+prdebug.obj+ 
+prerror.obj+ 
+prhash.obj+ 
+pribmpc.obj+ 
+prlush.obj+ 
+prmain.obj+ 
+prparse.obj+ 
+prprint.obj+ 
+prscan.obj+ 
+prunify.obj 
+sprolog.exe 
+sprolog.map 

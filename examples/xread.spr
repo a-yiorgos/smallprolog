@@ -1,0 +1,100 @@
+/* xread.pro */
+/* xread is an extension of read */
+/* this predicate lets you read & retain the names of the variables */
+/* lookat the variable names verifer too,
+   It's helpful in bug finding if you take the habit of never
+   using a varriable other than an anonymous variable for
+   the occurences that are unique in a clause 
+*/
+
+((xread X VarNameList)
+ (read X)
+ (var_name_list () 0 RVL)
+ (reverse RVL VarNameList)
+)
+
+((var_name_list Li Offset VL)
+ (var_name Offset VarName)
+ (cut)
+ (iplus Offset 1 Offset+1)
+ (var_name_list (VarName|Li) Offset+1 VL)
+)
+(var_name_list L _ L)
+
+((reverse L Li)
+ (reverse1 L () Li)
+)
+
+((reverse1 (X|Y) Li L)(reverse1 Y (X|Li) L))
+(reverse1 () L L)
+
+((xprint V VarNameList)
+ (var V)
+ (cut)
+ (var_offset V Offset)
+ (list_nth Offset VarNameList VarName)
+ (writes VarName)
+)
+
+((xprint X _)
+ (atomic X)
+ (display X)
+)
+((xprint (A|B) VarNameList)
+ (writes "(")
+ (xprint_rest (A|B) VarNameList)
+ (writes ")") 
+)
+((xprint_rest (A|B) VL)
+ (is_list B)
+ (cut)
+ (xprint A VL)
+ (writes " ")
+ (xprint_rest B VL)
+)
+
+((xprint_rest (A|B) VL)
+ (xprint A VL)
+ (writes "|")
+ (xprint B VL)
+)
+(xprint_rest () _)
+
+((is_list L )(nonvar L)(eq L (X|Y)))
+(is_list ())
+
+/* read and print an expression without throwing the variable names away*/
+((xread_print )
+ (xread X VL)
+ (xprint X VL)
+)
+
+/* check if varnamelist contains a name other than "_" which is
+  unique in that clause.
+*/
+
+((unique_name Seen Name ToSee)
+ (diff Name "_")
+ (unique_occurence Name ToSee)
+ (not (member Name Seen))
+)
+((unique_occurence Name (Name|L))
+ (not (member Name L))
+)
+((unique_names L)
+ (unique_names1 () L)
+)
+((unique_names1 Seen (X|L))
+ (unique_name Seen X L)
+)
+((unique_names1 Seen (X|L))
+ (unique_names (X|Seen) L)
+)
+
+((safe_load_clause L)
+ (xread L VarNames)
+ (if (unique_names VarNames)(true)
+     (and(display (unsafe L))(nl))
+ )
+)
+

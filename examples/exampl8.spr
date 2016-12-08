@@ -1,0 +1,143 @@
+/* example8.spr */
+/* list handling */
+/* lists are useful because they represent variable-size
+   sequences. Lists can even contain sublists.
+ */
+/* Most list handling algorithms are recursive.
+   To understand them you need to have a very precise
+   idea of how prolog's matching works. This is beyond
+   the scope of these comments. You could spend several
+   weeks trying to understand the C source code, but we
+   recommend you read a good book, bearing in mind
+   our notation is not Edinburgh prolog's (it's like
+   Micro-Prolog's)
+
+   Suffice it to say that
+   the list (Head | Tail ) will match any list with at
+   least one element. The variable Head will match the
+   first element and Tail will match the sublist which 
+   is the rest.
+
+   The file sprolog.ini is full of list handling
+   relations, some will be a bit obscure.
+  
+   Lots of examples are not harmful so here are some:
+   Most of the relations (or "predicates") are functions
+   in fact, so we take the convention that the result is
+   the value of the last argument :  
+   Many of these are so consise that it helps tracing 
+   to see how they work. But from the declarative point 
+   of view they are quite clear.
+*/
+
+/* self documenting */
+(list_has_exactly_3_elements (_ _ _))
+
+/*************/
+((display_elements (Head | Tail))
+ (display Head)
+ (nl)
+ (display_elements Tail)
+)
+(display_elements ())
+
+/*************/
+(last_member (X) X)
+((last_member (Head  | Tail) Last)
+ (last_member Tail Last)
+)
+
+/*************/
+
+(lists_have_same_length () ())
+((lists_have_same_length (Head | Tail) (Head1 | Tail1) )
+ (lists_have_same_length Tail Tail1)
+)
+
+((middle_element L M)
+ (append L1 (M | L2) L)/* see sprolog.ini */
+ (lists_have_same_length L1 L2)
+) /* This was a hard one : no call to a builtin was used */
+
+
+/*************/
+
+(permute_list () ())
+((permute_list (Head | Tail) Permuted)
+ (permute_list Tail Permuted_sublist)
+ (insert Head Permuted_sublist  Permuted)
+)
+
+(insert X L (X | L))
+((insert X (Head | Tail) (Head | Tail2))
+ (insert X Tail Tail2)
+)
+
+/*************/
+((reverse_list List Reversed)
+ (aux_reverse List () Reversed)
+)
+
+((aux_reverse (Head | Tail) Stack Reversed)
+ (aux_reverse Tail (Head | Stack) Reversed)
+)
+(aux_reverse () Reversed Reversed) 
+
+/*************/
+((set_union (Head | Tail ) List Union)
+ (member Head List)
+ (cut)
+ (set_union  Tail  List Union)
+)
+((set_union (Head | Tail ) List (Head | Union))
+ (set_union  Tail  List Union)
+)
+
+/*************/
+
+((minimum_of_list (Head| L) Min)
+ (minimum1 Head  L Min)
+)
+
+((minimum1 Min_found_so_far (H | T) Min)
+ (iless Min_found_so_far H)
+ (cut)
+ (minimum1 Min_found_so_far T Min)
+)
+((minimum1 Min_found_so_far (H | T) Min)
+  (minimum1 H T Min)
+)
+(minimum1 Min () Min)
+
+
+/****************** demo section *****************/
+((pause)(writes "Press return ")(get _))
+
+(demo_list (aztec microsoft turbo watcom mw lattice metaware))
+
+((demo8)
+ (demo_list L)
+ (display_elements L)
+ (nl)
+ (pause)
+ (middle_element L M)
+ (display M)
+ (nl)
+ (pause) 
+/* warning : this going to be rather long */
+ (permute_list L Perm)
+ (display Perm)
+ (nl)
+ (fail) /* come here 7! times */
+)
+((demo8) /* continues here */
+ (pause)
+ (demo_list L)
+ (reverse_list L R)
+ (display R)
+ (nl)
+ (pause)
+ (minimum_of_list (34 3 -9 7) Min)
+ (display Min)
+ (quit)
+)

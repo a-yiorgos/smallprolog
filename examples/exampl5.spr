@@ -1,0 +1,60 @@
+/* example5.spr */
+/* recursion */
+
+/* Recursion is especially useful when the data structures are recursively
+   defined.
+   An arithmetic expression is a well known example of such a structure.
+   We shall define an arithmetic expression as follows:
+   <expression> ::== <integer>
+   		|    (<expression> <operator> <expression>)
+
+   <operator> ::==  plus |
+		   minus |
+		   times
+ */
+
+/* We shall evaluate expressions with the predicate evaluate.
+	There are several rules for evaluate:
+   If the first one does not work then the following are used
+   Try tracing to see what is going on.
+ */
+
+((evaluate V V)
+ (integer V)
+)
+((evaluate (E1 Operator E2) V)
+ (evaluate E1 V1) /* evaluate calls itself */
+ (evaluate E2 V2)
+ (apply_operator Operator V1 V2 V)
+)
+
+((apply_operator plus X Y Z)
+ (iplus X Y Z)
+)
+((apply_operator minus X Y Z)
+ (iminus X Y Z)
+)
+((apply_operator times X Y Z)
+ (imult X Y Z)
+)
+
+/* What about global variables in expressions then?
+   Well a prolog work around is to 
+   add facts like these:
+
+   (value x 56)
+   (value y 0)
+
+ and an extra rule for evaluate as follows:
+
+((evaluate X V)
+ (value X V)
+)
+ That's all!
+*/
+
+((demo5)
+ (evaluate (4 times ( 5 plus 6)) Value)
+ (display Value)
+ (nl)
+)

@@ -1,0 +1,60 @@
+/* example9.spr */
+/* exploring the assert primitive */
+/* a call to (asserta List) will add a copy of List as 
+   a clause (i.e. rule or fact) to the "workspace".
+   asserta will add it to the beginning
+   assertz will add it to the end.
+   
+   Below is a way consult could have been defined in 
+   prolog.
+
+*/
+
+/*************** version 1 **************/
+
+((alternative_consult_1 Filename)
+ (seeing OldFile_we_were_reading) /* hang on to it ! */
+ (see Filename) /* read from this now */
+ (recursive_read_and_assert_all_clauses)
+ (seen) /* close the file */
+ (see OldFile_we_were_reading) /* back to old state */
+)
+
+((recursive_read_and_assert_all_clauses)
+ (read Clause_body) /* fails on EOF */
+ (assertz Clause_body)
+ (recursive_read_and_assert_all_clauses)
+)
+(recursive_read_and_assert_all_clauses) /* come here on EOF */
+
+/************** version 2 **************/
+/* a dirty prolog programming trick that does not overflow stack */
+
+((alternative_consult_2 Filename)
+ (seeing OldFile_we_were_reading) /* hang on to it ! */
+ (see Filename) /* read from this now */
+ (recursive_read_and_assert_all_clauses)
+ (seen) /* close the file */
+ (see OldFile_we_were_reading) /* back to old state */
+)
+
+((fail_driven_read_and_assert_all_clauses)
+ (eternal_backtrack_point)/* come back here because of failure */
+ (read_and_assert_clause_then_fail)
+ (cut) /* come here on EOF */
+)
+(fail_driven_read_and_assert_all_clauses)/* forces success at end */
+
+((read_and_assert_clause_then_fail)
+ (read Clause_body) /* this fails on EOF */
+ (assertz Clause_body)
+ (cut)
+ (fail)
+)
+(read_and_assert_clause_then_fail) /* come here on EOF */
+
+/* this succeeds indefinitely  - sometimes called repeat */
+(eternal_backtrack_point)
+((eternal_backtrack_point)
+ (eternal_backtrack_point)
+)

@@ -1,0 +1,68 @@
+/* exampl13.spr */
+/*
+ Simple parsing of simple sentences
+
+We assume the following grammar:
+sentence->subject predicate
+subject->article adjective noun
+subject->article noun
+subject-> name
+predicate-> intransitive_verb
+predicate-> transitive_verb subject
+
+terminals:
+name->[edmund]
+name->[ronald]
+noun->[tree]
+intransitive_verb->[sleeps]
+transitive_verb->[likes]
+article->[the]
+article->[a]
+adjective->[big]
+
+See Clocksin and Mellish for a discussion.
+*/
+
+((parse Input_sentence_list Output_parse)
+	(sentence Output_parse Input_sentence_list ())
+)
+
+((sentence ((subject S)(predicate P)) Linput Remaining)	
+ (subject S Linput L1)
+ (predicate P L1 Remaining)
+)
+((subject ((article A)(adjective Adj)(noun N)) L R)
+ (article A L L1)
+ (adjective Adj L1 L2)
+ (noun N L2 R)
+)
+((subject ((article A)(noun N)) L R)
+ (article A L L1)
+ (noun N L1 R)
+)
+((subject ((name N)) L R)
+ (name N L R)
+)
+((predicate ((intransitive_verb V)) L R)
+ (intransitive_verb V L R)
+)
+((predicate ((transitive_verb V)(subject S)) L R)
+ (transitive_verb V L L1)
+ (subject S L1 R)
+)
+(article the (the | L) L)
+(article a (a | L) L)
+(name edmund (edmund | L)L)
+(name ronald (ronald | L)L)
+(adjective big (big | L) L)
+(intransitive_verb sleeps (sleeps | L) L)
+(transitive_verb likes (likes |L)L)
+(noun tree (tree | L) L)
+
+/* try ?-(example13) */
+((example13)
+ (parse (the big tree likes edmund) P)
+ (display P)
+ (nl)
+ (cut)
+)

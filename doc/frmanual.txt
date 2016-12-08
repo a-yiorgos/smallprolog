@@ -1,0 +1,277 @@
+Decembre 1988
+
+	GUIDE DE REFERENCE POUR L'UTILISATEUR DE SMALL PROLOG
+
+
+INTRODUCTION
+
+Small Prolog est une implementation dans le domaine public du langage Prolog 
+qui est fournie avec ses sources ecrites en langage C.
+Small Prolog est inspire d'un gros interpreteur Prolog (FPROLOG)
+que j'ai ecrit pour ATARI ST. FPROLOG est disponible mais ne se trouve
+pas dans le domaine public.
+
+Vous pouvez faire ce qu'il vous plait avec le code de programmation,
+sauf de dire que c'est votre propre travail.
+Si vous vous servez de SMALL PROLOG pour creer une application commerciale,
+j'apprecierais toutefois que vous me fassiez parvenir une copie gratuite
+de votre logiciel.
+
+Il y a dans le domaine public d'autres implementations mais je n'en connais
+pas ou vous pouvez disposer du code source C.
+Si il se produit assez d'enthousiasme autour de ce logiciel, je me sentirai
+motive pour ecrire une documentation plus complete.
+
+Les buts recherches furent:
+  - Implementation petite pour un logiciel de developpement d'applications
+  - Portabilite maximale
+  - Code educatif
+  - Extension possible du code
+  - Petit code objet
+  - Integration facile
+  - Meta-programmation aisee
+Naturellement ces objectifs n'ont pas ete entierement atteints!
+Il est utile de lire le livre de HOGGER "Introduction a la programmation
+logique" Masson 1987).
+Pour comprendre le code vous pouvez consulter aussi "Computing with logic"
+de Maier et Warren, Benjamin Cummings 1988.
+
+Il faut mentionner les points suivants:
+
+La syntaxe LISPienne a ses avantages pour la meta-programmation et aussi
+par son code concis mais je la trouve d'un emploi peu convivial.
+
+Il n'y a pas de "ramasse miettes". C'est surprenant a quel point l'on peut
+s'en passer. Si vous voulez ramasser les miettes sur le corps des clauses,
+je vous suggere de creer une zone separee pour les doublets et de modifier
+la routine "get_node()" de telle facon qu'elle alloue un doublet mais ne
+retourne que la tete. Puis vous adaptez le "ramasse miettes" au code source
+de Xlisp qui est du domaine public.
+Vous pouvez aussi ramasser les miettes de la pile des substitutions.
+La seule litterature que je connaisse sur ce sujet est un article de
+Maurice Bruynehooge dans "Implementations of Prolog" edite par John Campbell,
+publie par John Wiley. Le livre est plein d'erreurs de frappe, alors bonne
+chance.
+
+A l'heure actuelle il y a quelques ameliorations du code qui doivent etre
+realisees comme par exemple la recursivite terminale.
+
+Le systeme de trace est rudimentaire.
+
+Les predicats predefinis standards du Prolog d'Edimbourg ne sont pas tous
+implementes. Nous pensons que vous aurez du plaisir a accomplir ce travail.
+
+
+SYNTAXE
+
+La syntaxe de prolog est extremement simple. Vous pouvez regarder les
+fichiers PRPARSE.C et PRSCAN.C fournis pour vous faire une idee, ou bien
+lire ce qui suit:
+
+Les commentaires ont la meme syntaxe qu'en C:
+/* Ceci est un commentaire
+ */
+
+Le programme peut etre mis en page avec autant d'espaces, de retour chariot,
+de tabulations que vous souhaitez mettre, a condition de ne pas couper
+en deux des items lexicaux. Un item lexical est un identificateur, un nombre,
+ou une chaine.
+
+A proprement parler un programme est un ensemble de clauses accompagne d'une
+requete, nous appellerons, par abus de langage, un ensemble de clauses un
+programme.
+
+Ce qui suit est une grammaire "context free" pour la syntaxe.
+Les symboles non-terminaux sont differencies des symboles terminaux en les
+mettant entre chevrons. Les commentaires suivent les regles de reecriture
+et sont a l'interieur de /* */.
+
+
+<programme> -> <vide>
+<programme> -> <clause> <programme>
+
+<clause> -> <regle>
+<clause> -> <fait>
+
+<regle> -> (<tete> <buts>)
+
+<fait> -> (<tete>)
+<fait> -> <tete>                        /* alternative possible */
+
+<tete> -> (<predicat> <arguments>)
+<tete> -> (<predicat> <arguments>|<argument>)
+/* utiliser la deuxieme possibilite pour tete avec precaution */
+
+<predicat> -> <atome autre que des predicats predefinis>
+
+<arguments> -> <vide>
+<arguments> -> <argument><arguments>
+
+<argument> -> <atome>
+<argument> -> <liste>
+<argument> -> <entier>
+<argument> -> <reel>
+<argument> -> <chaine>
+<argument> -> <variable>
+<argument> -> <char>
+
+<atome> -> ()
+/* vous pouvez espacer les parentheses */
+<atome> -> <lettre minuscule><fin de l'identificateur>
+
+<variable> -> _
+<variable> -> _<fin de l'identificateur>
+<variable> -> < lettre majuscule><fin de l'identificateur>
+
+<fin de l'identificateur> -> <vide>
+<fin de l'identificateur> -> <lettre de l'alphabet>
+<fin de l'identificateur> -> <chiffre>
+<fin de l'identificateur> -> _
+<fin de l'identificateur> -> <fin de l'identificateur><fin de l'identificateur>
+
+<liste> -> (<arguments>)
+<liste> -> (<arguments>|<argument>)
+
+<entier> -> <signe><entier sans signe>
+<entier> -> <entier sans signe>
+
+<entier sans signe> -> <chiffre>
+<entier sans signe> -> <chiffre><entier sans signe>
+
+<signe> -> -
+<signe> -> <vide>
+
+<buts> -> <but>
+<buts> -> <but><buts>
+
+<but> -> (<predicat utilisateur><arguments>)
+<but> -> (<predicat utilisateur><arguments>|<argument>)
+/* ne pas utiliser cette forme si le predicat est predefini */
+
+<predicat utilisateur> -> <lettre minuscule><fin de l'identificateur>
+
+<reel> -> <entier>.<entier sans signe>
+<char> -> '<caractere imprimable>'
+<char> -> '\n'
+<char> -> '\r'
+<char> -> '\t'
+<char> -> '\v'
+<char> -> '\f'
+<char> -> '\''
+<char> -> '\"'
+<char> -> '\<chiffre octal>'
+<char> -> '\<chiffre octal><chiffre octal>'
+<char> -> '\<chiffre octal><chiffre octal><chiffre octal>'
+
+<chaine> -> <delimiteur de chaine>
+            <sequence de caracteres>
+            <delimiteur de chaine>
+<delimiteur de chaine> -> "
+/* ne pas mettre de delimiteur de chaine dans la sequence de caracteres 
+ * a moins qu'il est immediatement suivi d'un deuxieme delimiteur.
+ */
+
+<requete> -> (<buts>)
+
+/* fin de la grammaire */
+
+exemples de requetes:
+((writes "Salut!")(nl))
+
+(nl)
+
+((writes "Quel est votre nom?")(read X)
+ (writes "Bonjour ")(display X))
+
+(writes "Ceci :"" est un delimiteur de chaine")
+
+PREDICATS PREDEFINIS
+
+La documentation sur les predicats predefinis est dans le fichier source
+PRBLTIN.C. Ils sont prevus pour etre enrichis.
+Vous devrez essayer de rester coherent avec ce que vous pourrez trouver
+dans le livre de Clocksin et Mellish:"Programming in Prolog" edition
+Springer Verlag.
+Pour inserer vos propres predicats predefinis, vous devez prendre
+connaissance de ce qui suit:
+SMALL PROLOG utilise beaucoup de variables globales definies dans le fichier
+PRLUSH.C.
+"Arguments" est la liste des arguments du but courant et "SubstGoal" est
+l'environnement de substitution pour ce but. Pour obtenir les differents
+elements de "Arguments" vous pouvez utiliser les macros ARG_XXX du fichier
+PRBUILTI.H. Toutes les fonctions utilisent frequemment la fonction
+dereference() de PRUNIFY.C, ainsi il est important de comprendre ceci,
+de la meme maniere que vous avez compris les types de donnees en BASIC.
+Cette fonction dereferencie un terme dans un environnement et met a jour
+les variables globales DerefNode et Derefsubst qui representent les objets
+dereferencies resultats. Elles sont globales pour conserver l'efficacite.
+
+
+UTILISATION DE SMALL PROLOG 
+
+Si vous utilisez mon fichier "makefile" alors il vous suffit de taper sprolog
+et le programme va consulter un fichier appele sprolog.inf qui contient les
+8 valeurs suivantes:
+- taille du tas (dans lequel les clauses sont allouees)
+- taille de la zone des chaines
+- taille de la pile de controle (utilisee par le mecanisme de resolution)
+- taille de la pile des substitutions (utilisee pour enregistrer les
+  substitutions - les liens des variables)
+- taille de la pile de restauration (utilisee pour remettre a zero la pile de
+  substitution)
+- taille de la zone des objets provisoires (netoyable avec clean_temp)
+- taille du tampon memoire de lecture (utilise pour lire les atomes, les chaines
+  etc ...)
+- taille du tampon memoire d'impression (utilise pour imprimer n'importe quoi,
+  le nombre devra etre superieur a 80).
+
+Si le fichier n'existe pas, par defaut 32000 est alloue au 4 premiere pile et
+1000 pour les deux dernieres.
+
+Puis Small Prolog regarde un fichier nomme sprolog.ini qui est charge. Vous
+y placez les predicats utilises couramment.
+
+Pour charger un fichier vous pouvez tapez par exemple ((consult monbeaufich))
+si le fichier n'a pas d'extension, ou alors ((consult "monfichier.pro")) si
+il possede une extension.
+
+Pour quitter Small Prolog, tapez (quit).
+
+N'oubliez pas de distinguer les lettres majuscules des lettres minuscules.
+
+
+TYPES DE DONNEES
+
+Le fichier PRTYPES.h contient un apercu des types de donnees.
+Le fichier PPRINT.c peut vous donner une idee sur comment ils s'integrent.
+
+Il y a quelques types que l'utilisateur de Prolog ne decrira jamais
+explicitement avec un objet imprimable. Le plus important est le type CLAUSE,
+que certain nomme aussi "references de la base de donnees".
+Vous pouvez lier une clause a une variable (avec first_clause, par exemple)
+mais vous n'aurez pas la possibilite de voir ce lien directement. Cependant
+vous pouvez utiliser body_clause pour vous permettre de regarder le corps de
+la clause, qui est une liste.
+
+
+SUGGESTION POUR DES EXTENSIONS
+
+Ameliorer la syntaxe, aussi bien en C qu'en Prolog.
+Ameliorer les outils de trace.
+
+SUGGESTION POUR DES PROJETS
+
+Integrer ce logiciel avec CLIPS (disponible chez "Austin Code Works").
+Integrer ce logiciel avec NEXPERT.
+Integrer ce logiciel avec Micro-Emacs. 
+Integrer ce logiciel avec Hypertext ou Hypercard.
+
+Si vous avez un ordinateur Atari et que vous ne vouliez pas faire tout ce
+travail alors achetez FPROLOG.
+
+Ou appeler:
+	Societe DIAINFORMATICA
+	26 Avenue de Paris
+	92230 Chatillon
+
+ Tel (1) 46 55 99 11.

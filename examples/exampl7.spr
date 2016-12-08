@@ -1,0 +1,39 @@
+/* exampl7.spr */
+/* The cut */
+/* The cut is a builtin that is a control structure */
+/* It says roughly "stop looking for any more solutions of the
+   rule head which I come from"
+
+  Here is an example consider the following program:
+*/
+
+((north_american P)
+ (lives_in P usa)
+ (cut)
+)
+((north_american P)
+ (lives_in P canada)
+)
+
+(lives_in anca usa)
+(lives_in brian usa)
+(lives_in murray canada)
+
+/* If you ask the following question:
+   
+  (north_american Somebody)
+
+ you get only one answer out of an expected 3!
+ 
+ This is because once execution gets to the cut no more
+ other solutions for the goal (north_american Somebody)
+ are considered
+
+ The cut is used in the definition of "not" which is in 
+ sprolog.ini and it is used in the file help.spr
+
+ If the value of Goal is a goal
+ then (not Goal) succeeds if and only if Goal fails.
+*/
+
+

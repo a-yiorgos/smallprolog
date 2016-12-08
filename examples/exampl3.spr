@@ -1,0 +1,95 @@
+/* exampl3.spr */
+/* Exploring combinations of relations and rules.
+   Rules are more complicated than facts. They are prolog's 
+   equivalent of procedures.
+   A rule has a head and some conditions.
+   In Small Prolog a rule is a list whose first element is the head
+   and the following elements are its conditions.
+
+   You can ask a question if it matches the head of a rule or 
+   a fact or if it's a builtin. Otherwise its garanteed to "fail".
+   Of course you can also group several questions into a list of 
+   questions.
+   Matching the head of a rule is more sophisticated
+   than matching a fact, because rule heads generally contain
+   variables.
+   Once the first goal of the query and the head of the rule
+   have matched (ie unified) the goals of the rule are added
+   to the list of goals to solve.
+   All variables in rules are local so there is never any 
+   conflict.
+
+   Once you know prolog well it is fun trying to encode high school
+   science. But it takes considerable maturity and one does notice
+   that prolog can be awkward.
+ */
+
+(density sea_water 1.O3)
+(density milk 1.O3)
+(density olive_oil 0.92)
+(density petroleum 0.80)
+
+(density almond_wood 0.99)
+(density apricot_wood 0.89)
+(density apple_wood 0.88)
+(density walnut_wood 0.8)
+(density maple 0.7)
+(density poplar 0.45)
+(density balsa 0.12)
+(density iridium 22.64)
+(density lead 11.34)
+(density plutonium 19.7)
+(density copper 8.94)
+(density steel 7.8)
+(density mercury 13.6)
+(density gold 19.3)
+(density diamond 3.51)
+(density glass 2.5)
+(density sugar 1.6)
+(density fat 0.94)
+
+(solid almond_wood)
+(solid apricot_wood)
+(solid apple_wood)
+(solid walnut_wood)
+(solid maple)
+(solid poplar)
+(solid balsa)
+(solid iridium)
+(solid lead)
+(solid plutonium)
+(solid copper)
+(solid steel)
+(solid gold)
+(solid diamond)
+(solid glass) /* at least, to the layman. In fact it's a viscous liquid */
+(solid sugar)
+(solid fat)
+
+(liquid sea_water)
+(liquid pure_water)
+(liquid olive_oil)
+(liquid petroleum)
+(liquid milk)
+
+(water_soluble water)
+(water_soluble sea_water)
+(water_soluble sugar)
+(water_soluble milk)
+
+/* this is a rule */
+/* It has an informal declarative interpretation as follows:
+  A thing can float on water if its density is less than 1.0 .
+  Now try the query 
+  (can_float_on_water X).
+ */
+((can_float_on_water Thing )/* head */
+ /* if the following are true */
+	 (density Thing Density)
+ 	 (rless Density 1.0)
+)
+
+/* actually you would probably add an extra condition :
+   (not (water_soluble Thing))
+  but that's jumping ahead a little.
+ */

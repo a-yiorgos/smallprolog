@@ -1,0 +1,66 @@
+# makefile for Small Prolog with GNU gcc for the 386 (dos-extension) 
+# As gcc V1.03 is unreliable you may get a segementation violation during a
+# compile - just run make again
+
+SRC = pralloc.c prassert.c prbuilti.c prconsul.c prdebug.c prerror.c \
+ prhash.c prlush.c prmain.c prparse.c prprint.c prscan.c prgccpc.c prunify.c
+
+OBJ = pralloc.o prassert.o prbltin.o prcnsult.o prdebug.o\
+	prerror.o  prhash.o prlush.o prparse.o \
+	prprint.o prscan.o prgccpc.o prunify.o prmain.o
+
+sprolog.32e : $(OBJ)
+	copy prgccpc.a tmp_ar.a
+	ar rvs tmp_ar.a
+	gcc prmain.o tmp_ar.a libpc.a
+	copy a.out sprolog.32e
+	del tmp_ar.a
+ 
+pp.exe : pp.c
+	gcc pp.c 
+	
+prmain.o: prmain.c 
+	gcc -c -DGCC prmain.c
+
+prlush.o: prlush.c prtypes.h prolog.h prlush.h
+	gcc -c -DGCC prlush.c
+	ar r prgccpc.a prlush.o
+prscan.o: prscan.c prtypes.h prolog.h prlex.h
+	gcc -c -DGCC prscan.c
+	ar r prgccpc.a prscan.o
+prbltin.o: prbltin.c prbltin.h prtypes.h prolog.h
+	gcc -c -DGCC prbltin.c
+	ar r prgccpc.a prbltin.o
+pralloc.o: pralloc.c prtypes.h prolog.h 
+	gcc -c -DGCC pralloc.c
+	ar r prgccpc.a pralloc.o
+prassert.o  prassert.c: prtypes.h prolog.h 
+	gcc -c -DGCC prassert.c
+	ar r prgccpc.a prassert.o
+prcnsult.o  prcnsult.c: prtypes.h prolog.h 
+	gcc -c -DGCC prcnsult.c
+	ar r prgccpc.a prcnsult.o
+prdebug.o: prdebug.c prtypes.h prolog.h 
+	gcc -c -DGCC prdebug.c
+	ar r prgccpc.a prdebug.o
+prerror.o  prerror.c : prtypes.h prolog.h 
+	gcc -c -DGCC prerror.c
+	ar r prgccpc.a prerror.o
+prhash.o  prhash.c: prtypes.h prolog.h 
+	gcc -c -DGCC prhash.c
+	ar r prgccpc.a prhash.o
+prparse.o  prparse.c: prtypes.h prolog.h 
+	gcc -c -DGCC prparse.c
+	ar r prgccpc.a prparse.o
+prprint.o  prprint.c: prtypes.h prolog.h prlex.h
+	gcc -c -DGCC prprint.c
+	ar r prgccpc.a prprint.o
+prgccpc.o  prgccpc.c: prtypes.h prolog.h 
+	gcc -c -DGCC prgccpc.c
+	ar r prgccpc.a prgccpc.o
+prunify.o  prunify.c: prtypes.h prolog.h 
+	gcc -c -DGCC prunify.c
+	ar r prgccpc.a prunify.o
+
+	
+

@@ -1,0 +1,33 @@
+/* example10.spr */
+/* using findall */
+/* findall is a special predicate that lets you build
+   lists much in the way sets are often defined.
+   It is defined in sprolog.ini
+
+  A call to a goal fo the form 
+ 
+   (findall X Goal L)
+
+will match L with the list of all X such the Goal is true.
+
+try (findall Person (lives_in Person europe) Europeans)
+*/
+
+(lives_in_state henri france)
+(lives_in_state edmund france)
+(lives_in_state anca new_york)
+(lives_in_state brian florida)
+
+((lives_in X Federation)
+ (lives_in_state X State)
+ (state_of State Federation)
+)
+
+(state_of france europe)
+(state_of florida usa)
+(state_of new_york usa)
+
+((demo10)
+ (findall Person (lives_in Person europe) Europeans)
+ (display Europeans)
+)

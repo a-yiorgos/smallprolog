@@ -1,0 +1,48 @@
+/* exampl11.spr */
+/* loops again */
+/* here are two ways of doing loops
+   They are not equivalent.
+ */
+
+/* enum gives you a sort of an equivalent of a for loop 
+ through bactracking and recursion
+ your are expected to supply the first three arguments
+ as well as the fifth.
+ */
+
+((enum Initial Step Final Initial Execute_me)
+ (ileq Initial Final)
+ Execute_me
+)
+((enum Initial Step Final Initial Execute_me)
+ (iless Final Initial)
+ (cut)
+)
+((enum Intermediate Step Final Value Execute_me)
+ (iplus Intermediate Step Intermediate2)
+ (enum Intermediate2 Step Final Value Execute_me)
+)
+
+/* recursive_loop works via pure recursion instead */
+((recursive_loop Initial Step Final Execute_me)
+ (iless Initial Final)
+ (cut)
+ Execute_me
+ (iplus Initial Step Initial2)
+ (enum Initial2 Step Final Execute_me)
+)
+(recursive_loop _ _ _)
+
+((demo11)
+ (enum 1 1 10 Value (display Value))
+ (fail)
+)
+(demo11)
+
+/* You can't abstract out a variable for a loop using
+   recursive loop because one a prolog variable has a value
+   it can only lose it through backtracking 
+   Nevertheless you can always solve loop problems
+   without bactracking. For example the sum predicate 
+   in sprolog.ini.
+ */

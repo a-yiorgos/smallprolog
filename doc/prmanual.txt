@@ -1,0 +1,578 @@
+Feb 17 1989
+Revised July 22 1989
+Revised December 25 1991
+Revised January 1 1992
+
+
+		Small Prolog User Guide & Reference
+Introduction.
+-------------
+Small Prolog is a public domain implementation of the Prolog Language, with
+C source provided.
+
+You can do what you like with the code, save claim it as your own work.
+If you embed this into a commercial application I would nevertheless
+appreciate a free copy of your software.
+
+ There are other public domain implementations around, but I dont know of 
+one where you get the C code apart a public domain compiler called 
+Stony Brook Prolog, but it hasnt yet been ported to the PC.
+ 
+The design goals were:
+	A minimal usable implementation.
+	Maximum portability.
+	Educational code.
+	Extensibility.
+	A small object code.
+	Embeddability.
+	Facilitate meta-programming.
+Of course these goals have not been fully met!
+It helps to read Hogger's book "An introduction to logic programming"
+ (Academic Press 1984)
+to  understand the code. You could also try
+Maier & Warren's "Computing with logic" - Benjamin Cummings Ed. 
+1988 as an alternative.
+
+On the negative side:
+ The syntax is LISP-like which has its advantages for meta-programming
+and small code, but I find that it is not very friendly.
+
+ There is no garbage collection of any sort. It's surprising how far
+you can get away with this. If you want to garbage collect on the
+heap, then I suggest that you make a separate zone for pairs and 
+modify get_node() so that it in fact allocates a pair but only 
+returns the head. Then adapt the garbage collector of the  source code
+of Xlisp (which is public domain). 
+  You could also garbage collect some of the substitution stack. The
+only easily available literature I know of is an article by Maurice
+Bruynehooge in "Implementations of Prolog" edited by John Campbell,
+published by John Wiley. The book is full of typos, so good luck.
+ 
+ There are quite a few improvements to the code to be made (at this time)
+such as last call optimisation.
+
+ The trace facilities of version 2 are no longer minimal.
+
+ Not all the "standard" builtins have been included. 
+ We thought you would enjoy putting these in. 
+
+Syntax
+------
+ The syntax of the prolog is extremely simple. You can look 
+ at one of the prolog source files (*.spr) provided to get an idea 
+ or you can look at the C souce code, or you can read the following:
+
+ Comments are as in the C language:
+ /* This is a comment 
+  */
+
+ The program may be layed out with as many spaces, line_feeds and
+ tabs as you like providing you don't chop a lexical item in two.
+ A lexical item is an identifier or a number or a string or 
+ brackets or the vertical bar.
+ 
+ Although strictly speaking a program is a set of clauses
+ AND a query, we shall call a set of clauses a program.
+ 
+The following is a context free grammar for the  syntax.
+Nonterminals are distinguished from terminals by putting them
+inside angle brackets. Comments follow the rewrite rules and are
+inside /* */.
+
+<program> -> <empty>
+<program> -> <clause> <program>
+
+<clause> -> <rule>
+<clause> -> <fact>
+
+<rule> -> (<head> <goals>)
+
+<fact> -> (<head>)
+<fact> -> <head>			/* alternative */
+
+<head> -> (<clause predicate> <arguments>)
+<head> -> (<clause predicate> <arguments>|<argument>)
+/* use the second kind of head with caution */
+
+<clause predicate> -> <atom other than builtin>
+
+<arguments> -> <empty>
+<arguments> -> <argument><arguments>
+
+<argument> -> <atom>
+<argument> -> <list>
+<argument> -> <integer>
+<argument> -> <real>			/* depends on conditional compilation */
+<argument> -> <string>
+<argument> -> <variable>
+<argument> -> <char>			/* depends on conditional compilation */
+
+<atom> -> ()
+/* you can space the brackets out */
+<atom> -> <small letter><identifier tail>
+
+<variable> -> _
+<variable> -> _<identifier tail>
+<variable> -> <capital_letter><identifier tail>
+
+<identifier tail> -> <empty>
+<identifier tail> -> <character other than space,bracket,quote or bar>
+<identifier tail> -> <identifier tail><identifier tail>
+
+<list> -> (<arguments>)
+<list> -> (<arguments>|<argument>)
+
+<integer> -> <sign><unsigned integer>
+<integer> -> <unsigned integer>
+
+<unsigned integer> -> <digit>
+<unsigned integer> -> <digit><unsigned integer>
+
+<sign> -> -
+<sign> -> <empty>
+
+<goals> -> <goal>
+<goals> -> <goal><space><goals>
+
+<goal> -> (<predicate><space><arguments>)
+<goal> -> (<predicate><space><arguments>|<argument>)
+/* dont use this form if the predicate is builtin */
+
+<predicate> -> <small letter><identifier tail>
+
+<real>-><integer>.<unsigned integer>
+
+<string> -> <string quote> <sequence of characters> <string quote>
+/* Dont put a string quote in the sequence of characters unless it is
+ * immediately followed by another string quote -only one is considered.
+ * 
+ */
+
+<char> -> '<printable character>'
+<char> -> '\n'
+<char> -> '\r'
+<char> -> '\t'
+<char> -> '\v'
+<char> -> '\f'
+<char> -> '\''
+<char> -> '\"'
+<char> -> '\<octal digit>'
+<char> -> '\<octal digit><octal digit>'
+<char> -> '\<octal digit><octal digit><octal digit>'
+
+<query> -> (<goals>)
+<query> -> <goal>
+/* The last form is permitted for one goal-queries */
+
+<string quote> -> "
+
+/* END OF GRAMMAR */
+
+Now for 4 sample queries. You don't type the "?-".
+?-((writes "Hello, world")(nl))
+?-((nl))
+?-(space_left Heap Strings Dyn SUb Trail Temp)
+?-((writes "What is your name?")(read X)
+ (writes "Hello, ")(display X))
+?-(writes "This :"" is an embeded double quote")
+
+
+Builtins:
+---------
+Builtins are predefined predicates that in fact call on C code.
+The builtins are documented in the source file prbltin.c.
+The file help.spr provides "on line" documentation.
+
+You could add more builtins by imitating that file, but 
+we suggest using an extra file.
+You should try to be consistent with Clocksin and Mellish's 
+builtins (see bibliography). Of course it's not as interesting 
+trying to define predicates like "functor", "arg" and "univ".
+
+To add your own builtins you should know the following:
+
+Small Prolog uses many global variables defined in prlush.c
+"Arguments" is the list of arguments of the current goal and "SubstGoal"
+ is the (substitution) environment for this. To get at the different 
+elements of "Arguments" you can use the ARG_XXX macros in prbltin.h.
+All functions make frequent use of the dereference() function in 
+prunify.c so it is important to understand this as soon as you have
+understood the basic data types. This function dereferences a
+term in an environment and updates the globals DerefNode and 
+DerefSubst which represent the resulting derefenced object. 
+They are globals.
+
+The following scheme gives you an idea of how a builtin might be
+built.
+
+Pmybuiltin()
+{
+/* local variables used below */
+int result;
+integer i;
+char *s;...
+
+/* argument extaction macros */
+ARG_INT(1,i) /* the first arg expected is an INT, i is set to this */
+ARG_STRING(2,s); /* the second arg expected is a string */
+...
+
+result = my_function(i,s,...,&o,...);/* you define this */
+bind_...(3,o); /* the third argument is bound to "o" */
+
+if(result == MY_SUCCESS/* you define this */)return 1;
+if(result == MY_FAIL/* ditto */)return 0;
+else
+  return(CRASH);/* force a stack dump */
+}
+
+Calling a builtin with extra arguments is harmless - they are
+just ignored. Missing arguments or arguments of a wrong type
+generally force a "stack dump" so you know where the program
+was when it crashed. This is a print out of all pending goal lists
+of the ancestors of the current goal.
+The top-most goal list is the list of goals of the current clause.
+Underneath this are the goals of the clause that called that etc.
+
+From version 2 on a builtin may backtrack by making the related 
+function return ND_SUCCESS. The repeat builtin does this.
+It is the builtin's responsability to update ND_builtin_next_nodeptr
+when it is called. That value is restored on backtracking and
+is the only information that is saved from one call to the next.
+See how the gennum predicate is implemented.
+
+Input-output:
+-------------
+The input output facilities are modelled on Clocksin and Mellish's
+description.
+At any one time there is a current input "stream" and a current output
+stream. These are usually files. You can read from a string by
+setting the String_input_flag. See the definition of the function
+getachar() in prscan.c. You might want to write a builtin
+to do this.
+ 
+ Similarly you might want to write on strings.
+ All program output that can be redirected should be done 
+ through pr_string. 
+ All program input that can be redirected should be done 
+ through getachar().
+These make use of Curr_outfile and Curr_infile respectively
+which represent the streams.
+The builtins "tell" "telling" and "told" are provided and work just
+as in Edinburgh Prolog.
+
+"see", "seeing" and "seen" work just as in Edinburgh prolog. 
+
+"writes" is used to display a string without the inverted commas.
+"display" will output a term.
+"put" is used to output a character, using the ascii code.
+
+Arithmetic:
+----------
+The predicates that work on reals don't work on integers and
+vice versa. The predicates iplus, iless, isub work on integers.
+If you want extra arithmetic predicates just imitate the code for these.
+
+Tracing programs.
+-----------------
+If you #undefine TRACE_CAPABILITY Small Prolog won't be able to trace,
+but it will run a little faster.
+
+A pair of global variable called Trace_flag and Tracing_now turn
+tracing on or off.
+The type of tracing involved is described in Clocksin and Mellish.
+
+	The builtins concerned here are :
+trace - sets the tracing flag to 1 (on).
+notrace - sets the tracing flag to 0 (off).
+
+suspend_trace - decrements the trace flag
+resume trace - increments the trace flag.
+
+None of these have an argument.
+
+The last two are useful if you dont want to see all the gory 
+details of the execution, in particular, concerning the 
+predicates you don't care tracing.
+From version 2 on debugging is interactive in that you may
+during tracing choose to step over a call (you dont care
+what goes on inside). The best way to see this in action
+is to try it out. You type a letter after each tracing step
+indicating what you want to do next. If you type an unknown
+command like a question mark for example then you will be
+told what you can type.
+Here is a more detailed explanation.
+Command		Explanation
+-------		-----------
+Enter   Move to next execution step
+a	Abort the current execution and return to top-level.
+n	Stop tracing but continue the execution
+1	Come back to default behaviour
+2	Increase the value of Trace_flag so that the rules tried
+	may be seen.
+B	Return to previous backtrack point.
+P	Return to parent goal (step back, you can do this several times)
+s	Dont trace the intermediate steps before the success or failure
+	of current goal.
+U	Unleash tracing : tracing unfolds without prompts, until the next
+	solution.
+
+Reverse tracing is only possible if you have previously executed
+(reverse_trace_mode).
+This is costly in control stack space than default behaviour because
+it makes the stack always store all the information that non deterministic 
+calls need to store.
+
+You may also want to use (logging "myfile") and (nologging)
+to record your trace session on a file. The first predicate expects the name 
+of the file in which a log of the session is recorded. The second closes
+the file. The logfile is closed if you quit Small Prolog the 
+polite way.
+
+The builtin abort aborts the execution without forcing a stack dump.
+To write a builtin that does force a stack dump just make it return
+the manifest constant CRASH.
+
+	This is a display of the stack of goal lists corresponding to the
+current state of execution. This is generally what gets shown if a 
+builtin is called erroneouly.
+
+Incidentally if your program overflows a stack you get asked if you 
+want to see the stack of pending goals. 
+This could give you a hint of where things
+went wrong. It could just be that your program consumes too much
+stack space for the currently allowed stack space. This is determined
+by sprolog.inf.
+
+Running Small Prolog
+--------------------
+ If you used the makefile then just type sprolog.
+ An MSDOS executable is provided.
+ If you have a 386 PC or better, a DOS-extended version
+called sprolog.32e is supplied as well. 
+This was compiled with Delorie's GNU GCC compiler for the 386. 
+To run this one type "go32 sprolog.32e".
+
+ The program looks for a file called sprolog.inf
+ which contains 8 numbers for the 
+
+ size of the heap (from which clauses are allocated)
+ size of the string zone 
+ size of the control stack (used by the resolution mechanism)
+ size of the substitution stack (used to record variable bindings)
+ size of the trail (used to reset the substitution stack)
+ size of a zone for temporary allocations (used by temp_assertz ...)
+ size of the read buffer (used to read atoms,strings etc )
+ size of the print buffer (used to print anything, this should 
+ be at least 80)
+
+ If the file does not exist then default values , 32000 are used
+ for the first 6 and 1000 for the last two.
+ The normal PC sprolog expects each number to be less than
+ 65536, but sprolog.32e will accept huge numbers here, if your
+ 386 has enough memory. The Atari version will accept huge values 
+ too.
+
+ Then Small Prolog looks for a file called sprolog.ini 
+ which it loads. You put commonly used predicates in this file.
+
+ Small Prolog looks for a file called query.ini in which 
+ it will find the first query. This can be useful if you
+ are continually modifying and testing a program. You
+ would put somethying like (consult myfile.pro) in 
+ the file query.ini.
+
+
+ To load a file you can type something like (consult myfile)
+if the file  has no extension, or (consult "myfile.pro") if
+ it does have an extension.
+
+ To leave type (quit)
+ 
+ Dont forget to distinguish capitals from small letters.
+
+Typical beginner's errors
+-------------------------
+The trivial mistakes that everyone makes:
+
+1) Loading a file twice.
+2) Name conflicts that arise when you consult two source files
+in the same workspace, make sure the predicate names are different.
+A call on (listing) is useful here.
+3) Misspellings, especially in names of variables.
+4) Using capitals where you should be using small letters
+and vice versa.
+5) Forgetting an argument.
+Load the file verif.spr and call (verif), it's very helpful.
+6) You can't define a fact whose predicate is the name of a
+builtin.
+7) It's easy to forget brackets. The programme pp.c can help you
+find misplaced brackets (but compile it first.) 
+
+Conceptual mistakes:
+
+Forgetting that Prolog is a relational language, unlike
+Lisp. You can't evaluate expressions like (iplus (iplus 2 3) 6)
+unless you write a recursive evaluation algorithm.
+
+Expecting Prolog to be too close to C:
+Once a variable has a value it won't change.
+
+Expecting prolog to be perfectly declarative:
+Using a variable before it has found a value.
+Simple logically correct programmes can be procedurally
+defective. For example, the pair of clauses:
+
+((father Man Child)
+ (son Child Man)
+)
+((son Child Man)
+ (father Child Man)
+)
+will be responsable for a loop if you ask (father john peter).
+Some people hope that a cut will solve the problem. It wont.
+
+As soon as you put input/output in your program you can say goodbye
+to a lot of the declarativity: You cant backtrack on a read for
+example.
+
+
+Calling Small Prolog from your application.
+-----------------------------------------------
+This supposes you link your objects with ours.
+Don't use our main() of course.
+If you are using a PC clone you may have to recompile
+the files using the large memory model instead of the
+compact memory model (which is faster).
+
+Call init_sprolog() once and for all.
+Then call execute_query() with the query passed as a 
+string whenever you want to call a query.
+
+Data types.
+----------
+Prtypes.h contains an overview of the data types. 
+Prprint.c can give you an idea of how they fit in.
+The data types the end-user sees are:
+
+variables
+atoms
+integers
+reals
+strings
+lists (pairs and the empty list)
+characters  (these were added as an afterthought)
+
+The names of variables are jetissonned. Only their order in 
+a clause is retained.
+
+Integers have the same size as pointers.
+
+  There are some types that the Prolog user never explicitly
+describes with an printable object. The most important of these
+is the CLAUSE type, which some people call data-base references.
+You can bind a clause to a variable (with first_clause, for example)
+but you wont be able to see this binding directly. However you
+can use body_clause to let you look at the body of the clause -
+that is a list.
+
+Then there is the predicate record. This is used by the listing
+predicate. It is used to create a linked list of pointers
+to those atoms that represent the builtins.
+
+You can remove reals or characters and reduce code size by
+commenting out the #define REAL 6 and #define CHARACTER 7 lines
+in prtypes.h.
+
+Suggested extensions:
+----------------------
+Do something about variables' names. Use #ifdefs to keep the older version, 
+ because it's fast. You will consume more memory.
+Put in a rich set of numerical builtins.
+Improve the IO. You could snarf some code from Microemacs 3.9 for example.
+Improve the syntax, either in C or by a layer in Prolog.
+Improve the trace facilities.
+Add a garbage collector -you can reclaim clause space or stack space.
+Improve the clause indexing.
+Make the unification non-recursive.
+
+Suggested Projects:
+--------------------
+Integrate this with CLIPS (available from the Austin Code Works).
+Integrate this with an expert system shell like Nexpert.
+Integrate this with Micro-Emacs (I am thinking of using text segments
+as data).
+Integrate this with Hypertext or HyperCard.
+Integrate this with a spreadsheet.
+
+If you add optimisations please tell me about them.
+
+The company that used to sell Fprolog has gone bust.
+
+Bugs:
+----
+
+Known uncorrected problems:
+ Input is not very robust, incorrect syntax can lead to a core dump
+ on Unix.
+ A few trailing blanks at the end of the Prolog file can lead to a
+ parse error message.
+ clean_temp may cause problems.
+ Small Prolog makes you think there are more solutions to a query 
+ when there arent any. It has to actually look hard to find
+ this out.
+ When reverse execution mode is on it looks as if all clauses are
+ nondeterministic even if they are not.
+
+Feedback:
+--------
+Please send feedback via the C User's Journal.
+
+Bibliography:
+-------------
+W.F.Clocksin & C.S.Mellish 
+"Programming in Prolog"
+Third Edition 
+Springer Verlag 1987
+
+F Klusniak & S. Spakowicz
+"Prolog programming for Programmers"
+2nd edition Academic Press.
+Also discusses implementation, comes with Pascal sources
+of a structure-copying interpreter.
+
+I Bratko
+"Prolog Programming for Artificial Intelligence"
+Addisson Wesley 1986
+(This is an excellent book that can serve as an alternative 
+ to Clocksin an Mellish's)
+
+C Hogger
+"An Introduction to Logic Programming"
+Academic Press 1985
+(implementation verification and synthesis, an advanced book)
+
+David Maier David S Warren 
+"Computing with Logic"
+Benjamin Cummings 1987
+(implementation)
+
+
+NC Rowe 
+"Artificial Intelligence through Prolog"
+Prentice Hall 1987
+Lots of examples.
+
+P Boizumault
+"Prolog, l'implantation."
+Masson (Paris) 1987
+In depth study of implementation in Lisp, covers unusual aspects like 
+freeze, diff and optimizations.
+
+J.A. Campbell
+"Implementations of Prolog" 
+Ellis-Horwood/ J Wiley 1984
+Advanced topics.
+
+
+

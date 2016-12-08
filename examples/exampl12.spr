@@ -1,0 +1,57 @@
+/* exampl12.spr */
+/* An example due to Colmerauer.
+   This is a good example of simple declarative programming.
+   The numbers are integers because real number comparison has not 
+   been implemented. It is very easy to add your own rless predicate.
+   The numbers here are ficticious.
+   It is important to notice the order of the solutions and
+   to understand why they come out in that order.
+ */
+/* Try the (weight_watch) query */
+((weight_watch)
+ (writes "For a meal with less than 3000 calories.")(nl)
+ (meal Entree Main_dish Desert 3000)
+ (writes "Entree = ")
+ (display Entree)(nl)
+ (writes "Main dish = ")
+ (display Main_dish)(nl)
+ (writes "Desert =")
+ (display Desert)(nl)
+)
+
+((meal Entree Main_dish Desert Calorie_limit)
+	(entree Entree Calorie_Entree)
+	(main_dish Main_dish Calorie_Main_Dish)
+	(desert Desert Calorie_desert)
+	(sum3 Calorie_Entree Calorie_Main_Dish Calorie_desert Total_Calories)
+	(iless Total_Calories Calorie_limit)
+)
+
+(entree green_salad_with_vinaigrette 800)
+(entree carrots 400)
+(entree pate_de_fois_gras 2000)
+(entree croissant_au_jambon 1000)
+(entree cocktail_sausages 1200)
+(entree souffle 1000)
+(entree frogs_legs 1000)
+(entree nothing 0)
+
+(main_dish steak_and_eggs 2000)
+(main_dish turkey_and_parsnips 1800)
+(main_dish snails 1500)
+(main_dish hamburger /* sneer */ 1000)
+(main_dish rice_and_vegetable_curry 1300)
+(main_dish trout_and_potatoes 1600)
+(main_dish ravioli 1300)
+
+(desert ice_cream 800)
+(desert chalotte_aux_poires 1000)
+(desert orange 500)
+(desert baba_au_rhum 700)
+(desert ile_flotante 800)
+(desert nothing 0)
+
+((sum3 A B C Total)
+ (iplus A B A_plus_B)
+ (iplus A_plus_B C Total)
+)

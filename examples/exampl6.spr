@@ -1,0 +1,80 @@
+/* example6.spr */
+/* more on multiple rules */
+/* In prolog you can do without the or logical operator
+   and rely on multiple clauses for the same effect.
+   The logical and is taken care of by puting several
+   conditions to a rule.
+   The logical not is approximately covered by the 
+   "not" operator, but that's still too advanced.
+   The conditions of a rule become goals to solve
+   as prolog executes. The goals are tried from
+   left to right. Should all goals of a rule be solved
+   then the call to the rule succeeded.
+   This is not always the case.
+   For example in the following rule
+*/
+
+((demo6)
+ 
+ (display success_goal1)
+ (display success_goal2)
+ (display success_goal3)
+ (display success_goal4)
+ (fail)
+ (display success_goal5)
+ (display success_goal6)
+ (display success_goal7)
+)
+
+/*
+Only the first 4 goals will succeed: fail is garanteed to fail.
+So will any goal that is neither builtin nor defined.
+
+There is no alternative clause for demo6 so the execution ends there.
+
+However in:
+*/
+((demo6_1)
+ 
+ (display success_goal1)
+ (display success_goal2)
+ (display success_goal3)
+ (display success_goal4)
+ (fail)
+ (display success_goal5)
+ (display success_goal6)
+ (display success_goal7)
+)
+
+((demo6_1)
+ (display haha)
+ (nl)
+)
+/* 
+there is an alternative clause for demo6_1 and the execution
+backtracks and tries that. 
+ */
+
+/* This idea is used in the following declarative program  
+
+((north_american Person)
+ (lives_in Person usa)
+)
+((north_american Person)
+ (lives_in Person canada)
+)
+*/
+/* which says that one is north american if one lives in USA or in 
+  Canada.
+ */
+
+/* Incidentally a similar effect is obtained by:
+((north_american Person)
+ (lives_in Person Country)
+ (member Country (usa canada))
+)
+
+where member is defined in sprolog.ini.
+But that involves list-handling which is an advanced topic
+*/
+

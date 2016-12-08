@@ -1,0 +1,64 @@
+/* example1.spr */
+/* This is the first example file that comes with Small Prolog.
+   To load it:
+   First run sprolog by typing sprolog at the DOS level.
+   Then type (consult "example1.spr") and follow that
+   by a carriage return.
+   Then try asking questions (more about that below).
+   When you want to leave type (quit) or a control-c.
+   
+   What are questions?
+   First a little background:
+   Prolog can be used as a "declarative language". 
+   Ideally this would be that you could program forgetting how your program 
+   works -you would only have to tell it what is true, 
+   rather than how to go about answering you.
+   Then you would just ask questions to verify a fact or ask for a value.
+   In practice things aren't that perfect, but you can often program
+   without caring about the procedure that prolog uses to answer your
+   question. The simplest example is using Prolog as just a database
+   language, and this is what we shall do below. We have entered a
+   set of Prolog facts. Each fact starts with a name for a relation
+   and then some arguments. The meaning is of course your problem,
+   just as in any traditional database. Of course we are not storing
+   facts on disk, but rather in the "heap space" (part of RAM).
+
+   Asking a question is like executing a database query.
+   You type an expression that looks just like a fact, except
+   that it typed at the level of the interpreter and it may 
+   contain variables (which begin with capital letters).
+   So try loading this file and type the following questions.
+   Do not type them here in this file!
+   for example:
+
+   (composer_period chopin baroque)
+   (composer_period Who baroque)
+   (composer_period Who Period)
+   (composer_period beethoven Period)
+
+   Don't forget that constants must begin with a small letter.
+   If you dont'like this then change the source code!.
+   Prolog will answer a question ( or query) by trying to match
+   the question with some fact, It starts with the first fact
+   and moves downwards. When it works it gives you an answer,
+   and then if there are untried facts it will ask you if you
+   want to see if there are any more answers. You must answer y or n.
+   The matching process in prolog is called unification.   
+*/
+
+(composer_period chopin romantic)
+(composer_period brahms romantic)
+(composer_period berlioz romantic)
+(composer_period bach baroque)
+(composer_period vivaldi baroque)
+(composer_period telleman baroque)
+(composer_period stravinsky contemporary)
+(composer_period messiaen contemporary)
+(composer_period ives contemporary)
+(composer_period mozart classical)
+(composer_period haydn classical)
+(composer_period lutoslawski contemporary)
+(composer_period beethoven classical)
+(composer_period beethoven romantic)/* yes, both !! */
+(composer_period tchaikovsky romantic)
+

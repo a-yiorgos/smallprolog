@@ -1,0 +1,61 @@
+/* verif.pro */
+/* load this as well as your programme. Then call (verif). */
+/* This wil show up goals on which you may have forgotten arguments
+   for example. If you get just a yes then it has not found anything 
+   wrong.
+*/
+
+((verif)
+ /* You might want to comment out this message when you are
+   familiar with it :
+ */
+ (writes "A goal is unsatifiable ")
+ (writes "if it can never succeed. ")
+ (nl)
+ (pause_cafe)
+ (programme_goal G Clause_body)/* bactrack to here */
+ (unsatisfiable G)
+ (warning_unsatisfiable G Clause_body)
+ (fail)
+)
+(verif)
+
+((programme_goal G (Head|Goals))
+ (clause Head Goals)
+ (member G Goals)
+)
+
+((unsatisfiable G)
+ (var G)
+ (cut)
+ (fail)
+)
+((unsatisfiable G)
+ (clause G _) /* it's unifiable with the head of a rule */
+ (cut)
+ (fail)/* therefore it's not unsatisfiable */
+)
+((unsatisfiable (Functor | Args))
+ (atom Functor)
+ (builtin Functor)
+ (cut)
+ (fail)
+)
+(unsatisfiable _)
+
+((warning_unsatisfiable G Body)
+ (put 7) /* beep */
+ (writes "The goal ")
+ (display G)
+ (writes "in the clause")(nl)
+ (display Body)(nl)
+ (writes "is unsatisfiable. ")(nl)
+ (pause_cafe)
+)
+
+((pause_cafe)
+ (writes "Type Return or Enter")
+ (get _)
+)
+
+/* end of file */

@@ -1,0 +1,104 @@
+/* make.spr */
+/* The make utility -an unusual application of Prolog */
+/* just to make you think */
+/* not only this is unfinished but it requires you define 
+   a new builtin to compare file dates 
+ */
+((make)
+ (explicit_rule Targets Sources Actions)
+ (cut)
+ (make_all Sources)
+ (sources_more_recent Sources Targets)
+ (execute_actions  Actions)
+)
+((make Target)
+ (explicit_rule Targets Sources Actions)
+ (member Target Targets)
+ (cut)
+ (make_all Sources)
+ (sources_more_recent Sources Targets)
+ (execute Actions)
+)
+((make Target)
+ (implicit_rule Target_Type Source_Type Implicit_Actions)
+ (file_type Target Target_Type)
+ (determine_source Target Source_Type Source)
+ (make Source)
+ (build_actions Implicit_Actions Target Actions)
+ (execute_actions Actions)
+)
+((make Target)
+ (files_exists Targets)
+ (cut)
+)
+((make Targets)
+ (writes "Don't know how to make ")
+ (display Targets)
+ (nl)
+)
+
+((rule Targets Sources Actions)
+ (explicit_rule Targets Sources Actions)
+ (cut)
+)
+((rule Targets Sources Actions)
+ (implicit_rule Target_Type Source_Type IR_Actions)
+ (file_type 
+ /* complete this !!*/
+)
+
+((sources_more_recent (Source | Rest_Sources) Targets)
+ (one_target_more_old Source Target)
+)
+((sources_more_recent (Source | Rest_Sources) Targets)
+ (sources_more_recent Rest_Sources Targets)
+) 
+((one_target_more_old Source (Target | Rest_Targets))
+ (file_more_recent Source Target)
+ (cut)
+)
+((one_target_more_old Source (Target | Rest_Targets))
+ (one_target_more_old Source Rest_Targets)
+)
+
+((execute_actions (Action | Rest_Actions))
+ (execute_action Action)
+ (execute_actions Rest_Actions
+)
+(execute_actions ())
+
+((execute_action String_List)
+ (build_command String_List Command)
+ (system Command Return_Val)
+ (handle_return_val Command Return_Val)
+)
+((build_command (String | Rest_Strings) Command)
+ (build_command1 (String | Rest_Strings) "" Command)/* a little wasteful */
+)
+((build_command1 (String | Rest_Strings) String_so_far Command)
+ (string_concat String_so_far String String2)
+ (build_command1 Rest_Strings String2 Command)
+)
+(build_command () Command Command)
+
+((handle_return_val _ 0)(cut))
+((handle_return_val Command N)
+ (writes Command)
+ (writes " failed")(nl)
+ (abort)
+)
+
+((make_all (File |Rest_Files))
+ (make File)
+ (make_all Rest_files)
+)
+(make_all ())
+
+/* sample rules */
+
+((implict_rule "o" "c")
+ (cflags Flags)
+ (cc Flags "-c" )
+)
+
+/* end of file */

@@ -1,0 +1,30 @@
+Changes in December 1991.
+
+A makefile for GCC-386 has been added, as well as the executable
+and the DOS-extender.
+
+The Turbo C makefile is now for a large model program.
+
+The file prmanual.txt has been slightly updated.
+
+prgccpc.c has been added for the GCC version.
+
+Prolog.h has been extended for the GCC version.
+
+The files spread across 2 floppy disks.
+
+
+prlush.c has been modified so that tracing is more powerful
+-you can "skip" or step over the details of a call.
+-you can force a backtrack.
+-you can trace backwards, providing no side effects 
+  (with assertz's for example) were done.
+-you can unleash tracing
+
+dump_stack has been renamed dump_ancestors in prlush.c, pralloc.c and
+prdebug.c
+
+Builtins can now backtrack by returning ND_SUCCESS (see prtypes.h) 
+and the new builtin (repeat) does just this.
+prlush.h prlush.c, prtypes.h have been extended to this effect.
+(gennum X 3) backtracks X through integers between 0 and 3 inclusive.

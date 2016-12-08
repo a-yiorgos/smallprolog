@@ -1,0 +1,67 @@
+/* exampl14.spr */
+/* A graph searching program. 
+
+   Our notion of graph can be thought of as just a set of towns
+   and connecting rail segments, each of which has a given length.
+
+   The predicate "segment" has three arguments: 
+   1) A town at one end of a rail segment.
+   2) A town at other end of rail segment.
+   3) The distance of the road between them.
+   
+   The main predicate is "journey". Try (exampl14).
+ */
+
+/* The figures are off the top of my head (they are guestimates) */
+(segment paris orleans 100)
+(segment orleans blois 50)
+(segment blois tours 50)
+(segment orleans bourges 150)
+(segment paris chartres 100)
+(segment chartres le_mans 80)
+(segment le_mans angers 80)
+(segment le_mans tours 75)
+(segment angers nantes 100)
+(segment paris amiens 120)
+
+
+((link A B Length)
+ 	(segment A B Length)
+)
+((link A B Length)
+ 	(segment B A Length)
+)
+
+
+/*			predicate journey 
+  Departure, Arrival are the knowns and Itinerary and Distance
+   are the unknowns : 
+ */
+((journey Departure Arrival Itinerary Distance)
+ 	(journey1 Departure Arrival () Itinerary Distance)
+)
+
+
+/* The third argument of journey1 is used for the bookeeping purpose
+   of checking that we dont go round in circles : It is the list
+   of towns visited "so far".
+ */
+((journey1 A B _ (A B) D)
+	(link A B D)
+)
+((journey1 A B L (A | R) D)
+ (link A V D1)
+ (diff V B)
+ (not (member V L))
+ (journey1 V B (A|L) R D2)
+ (iplus D1 D2 D)
+)
+
+/* try (exampl14) */
+((exampl14)
+ (journey amiens nantes I D)
+ (writes "For a journey from Amiens to Nantes you can try:")
+ (nl)
+ (display I)(nl)
+ (writes "distance = ")(display D)(writes " kms.")(nl)
+)
